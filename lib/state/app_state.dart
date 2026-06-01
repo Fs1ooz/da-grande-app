@@ -64,7 +64,9 @@ class AppState extends ChangeNotifier {
   JourneyData data = JourneyData.empty();
   SharedPreferences? _prefs;
   static const _key = 'da_grande_journey_v1';
+  static const _darkKey = 'da_grande_dark_v1';
   bool loaded = false;
+  bool isDark = false;
 
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
@@ -76,6 +78,7 @@ class AppState extends ChangeNotifier {
         data = JourneyData.empty();
       }
     }
+    isDark = _prefs?.getBool(_darkKey) ?? false;
     loaded = true;
     notifyListeners();
   }
@@ -88,6 +91,12 @@ class AppState extends ChangeNotifier {
   }
 
   void notify() => notifyListeners();
+
+  Future<void> toggleDark() async {
+    isDark = !isDark;
+    await _prefs?.setBool(_darkKey, isDark);
+    notifyListeners();
+  }
 
   Future<void> reset() async {
     data = JourneyData.empty();
@@ -136,6 +145,12 @@ class AppState extends ChangeNotifier {
         return data.declaration.trim().isNotEmpty ||
             data.presentation.values.any((v) => v.trim().isNotEmpty);
     }
+  }
+
+  bool isLocked(Stage s) {
+    final i = StageList.all.indexOf(s);
+    if (i <= 0) return false;
+    return !isComplete(StageList.all[i - 1]);
   }
 
   double get progress {
