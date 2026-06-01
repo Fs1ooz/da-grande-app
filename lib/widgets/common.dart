@@ -48,7 +48,7 @@ class IntroCard extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           AppColors.ink,
-                          accentColor.withOpacity(0.55),
+                          accentColor.withValues(alpha: 0.55),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -60,7 +60,7 @@ class IntroCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.menu_book_rounded,
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           size: 36,
                         ),
                         const SizedBox(height: 14),
@@ -87,7 +87,7 @@ class IntroCard extends StatelessWidget {
                         height: 1.65,
                         color: isDark
                             ? Colors.white70
-                            : AppColors.ink.withOpacity(0.85),
+                            : AppColors.ink.withValues(alpha: 0.85),
                       ),
                     ),
                   ),
@@ -101,7 +101,8 @@ class IntroCard extends StatelessWidget {
               color: isDark ? AppColors.darkSurface : AppColors.surface,
               border: Border(
                 top: BorderSide(
-                  color: isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5),
+                  color:
+                      isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5),
                 ),
               ),
             ),
@@ -193,7 +194,8 @@ class SectionScaffold extends StatelessWidget {
                           subtitle!,
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.darkMuted : AppColors.muted,
+                            color:
+                                isDark ? AppColors.darkMuted : AppColors.muted,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
