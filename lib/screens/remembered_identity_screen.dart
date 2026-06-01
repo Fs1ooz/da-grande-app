@@ -47,7 +47,7 @@ class _RememberedIdentityScreenState extends State<RememberedIdentityScreen> {
             number: i + 1,
             episode: state.data.empowering[i],
             accent: AppColors.mint,
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
         const SizedBox(height: 24),
         const _GroupHeader(
@@ -62,7 +62,7 @@ class _RememberedIdentityScreenState extends State<RememberedIdentityScreen> {
             number: i + 1,
             episode: state.data.disempowering[i],
             accent: AppColors.coral,
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
       ],
     );
@@ -210,34 +210,47 @@ class _KeepButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.14) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: selected ? color : const Color(0xFFE1E6F0),
-              width: selected ? 1.6 : 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: selected ? color : AppColors.muted),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: selected ? color : AppColors.muted,
-                ),
-              ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? AppColors.darkCard : Colors.white;
+    final unselectedBorder =
+        isDark ? AppColors.darkBorder : const Color(0xFFE1E6F0);
+    final unselectedText = isDark ? AppColors.darkMuted : AppColors.muted;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+            decoration: BoxDecoration(
+              color: selected ? color.withValues(alpha: 0.14) : unselectedBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: selected ? color : unselectedBorder,
+                  width: selected ? 1.6 : 1),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 18, color: selected ? color : unselectedText),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: selected ? color : unselectedText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

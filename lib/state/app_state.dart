@@ -65,8 +65,10 @@ class AppState extends ChangeNotifier {
   SharedPreferences? _prefs;
   static const _key = 'da_grande_journey_v1';
   static const _darkKey = 'da_grande_dark_v1';
+  static const _unlockKey = 'da_grande_unlock_all_v1';
   bool loaded = false;
   bool isDark = false;
+  bool allUnlocked = false;
 
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
@@ -79,6 +81,7 @@ class AppState extends ChangeNotifier {
       }
     }
     isDark = _prefs?.getBool(_darkKey) ?? false;
+    allUnlocked = _prefs?.getBool(_unlockKey) ?? false;
     loaded = true;
     notifyListeners();
   }
@@ -95,6 +98,12 @@ class AppState extends ChangeNotifier {
   Future<void> toggleDark() async {
     isDark = !isDark;
     await _prefs?.setBool(_darkKey, isDark);
+    notifyListeners();
+  }
+
+  Future<void> toggleUnlockAll() async {
+    allUnlocked = !allUnlocked;
+    await _prefs?.setBool(_unlockKey, allUnlocked);
     notifyListeners();
   }
 
@@ -148,6 +157,7 @@ class AppState extends ChangeNotifier {
   }
 
   bool isLocked(Stage s) {
+    if (allUnlocked) return false;
     final i = StageList.all.indexOf(s);
     if (i <= 0) return false;
     return !isComplete(StageList.all[i - 1]);

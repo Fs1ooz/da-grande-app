@@ -5,7 +5,7 @@ import '../data/content.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
-import '../widgets/donut_chart.dart';
+import '../widgets/radar_wheel.dart';
 
 class WheelOfLifeScreen extends StatefulWidget {
   const WheelOfLifeScreen({super.key});
@@ -41,10 +41,10 @@ class _WheelOfLifeScreenState extends State<WheelOfLifeScreen> {
             index: area,
             accent: accent,
             options: _options,
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
         const SizedBox(height: 8),
-        _ResultCard(state: state),
+        const _ResultCard(),
         const SizedBox(height: 16),
         const FieldLabel('Osservazioni personali: cosa hai scoperto?'),
         JournalField(
@@ -144,11 +144,11 @@ class _AreaCard extends StatelessWidget {
 }
 
 class _ResultCard extends StatelessWidget {
-  final AppState state;
-  const _ResultCard({required this.state});
+  const _ResultCard();
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
     return SoftCard(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -158,11 +158,11 @@ class _ResultCard extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
-          DonutChart(
+          RadarWheel(
             labels: wheelShortLabels,
             values: state.wheelScores(),
             maxValue: 10,
-            colors: AppColors.stageColors,
+            color: AppColors.stageColors[0],
           ),
         ],
       ),

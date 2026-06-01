@@ -47,7 +47,7 @@ class _ValuesScreenState extends State<ValuesScreen> {
             number: i + 1,
             accent: accent,
             entry: state.data.values[i],
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
       ],
     );

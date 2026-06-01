@@ -43,7 +43,7 @@ class _ReflectedIdentityScreenState extends State<ReflectedIdentityScreen> {
             accent: accent,
             mirrorOptions: _mirrorOptions,
             phrase: state.data.reflected[i],
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
       ],
     );

@@ -21,6 +21,7 @@ class SectionScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -60,9 +61,9 @@ class SectionScaffold extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.muted,
+                            color: isDark ? AppColors.darkMuted : AppColors.muted,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -100,6 +101,7 @@ class InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -115,10 +117,10 @@ class InfoCard extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
-                color: AppColors.deep,
+                color: isDark ? Colors.white70 : AppColors.deep,
               ),
             ),
           ),
@@ -128,7 +130,7 @@ class InfoCard extends StatelessWidget {
   }
 }
 
-/// Card bianca con padding e bordo morbido.
+/// Card con padding e bordo morbido, tema-aware.
 class SoftCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -139,12 +141,14 @@ class SoftCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.darkCard : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE8ECF5)),
+        border: Border.all(
+            color: isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5)),
       ),
       child: child,
     );
@@ -158,21 +162,22 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6, top: 4),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: AppColors.deep,
+          color: isDark ? Colors.white : AppColors.deep,
         ),
       ),
     );
   }
 }
 
-/// Gruppo di pulsanti a scelta singola.
+/// Gruppo di pulsanti a scelta singola con ripple immediato.
 class ChoiceRow extends StatelessWidget {
   final List<String> options;
   final int? selected;
@@ -189,29 +194,41 @@ class ChoiceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? AppColors.darkCard : Colors.white;
+    final unselectedBorder =
+        isDark ? AppColors.darkBorder : const Color(0xFFE1E6F0);
+    final unselectedText = isDark ? AppColors.darkMuted : AppColors.muted;
+
     return Row(
       children: [
         for (int i = 0; i < options.length; i++) ...[
           Expanded(
-            child: GestureDetector(
-              onTap: () => onSelect(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: selected == i ? accent : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selected == i ? accent : const Color(0xFFE1E6F0),
-                  ),
-                ),
-                child: Text(
-                  options[i],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: selected == i ? Colors.white : AppColors.muted,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => onSelect(i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: selected == i ? accent : unselectedBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: selected == i ? accent : unselectedBorder,
+                      ),
+                    ),
+                    child: Text(
+                      options[i],
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: selected == i ? Colors.white : unselectedText,
+                      ),
+                    ),
                   ),
                 ),
               ),

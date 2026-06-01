@@ -42,7 +42,7 @@ class _PotentialScreenState extends State<PotentialScreen> {
           icon: Icons.star_rounded,
           color: AppColors.amber,
           items: state.data.talenti,
-          onChanged: () => setState(() => state.save()),
+          onChanged: () { setState(() {}); state.save(); },
         ),
         const SizedBox(height: 14),
         _ListBox(
@@ -51,7 +51,7 @@ class _PotentialScreenState extends State<PotentialScreen> {
           icon: Icons.favorite_rounded,
           color: AppColors.coral,
           items: state.data.risorse,
-          onChanged: () => setState(() => state.save()),
+          onChanged: () { setState(() {}); state.save(); },
         ),
         const SizedBox(height: 14),
         _ListBox(
@@ -60,7 +60,7 @@ class _PotentialScreenState extends State<PotentialScreen> {
           icon: Icons.fitness_center_rounded,
           color: AppColors.cyan,
           items: state.data.capacita,
-          onChanged: () => setState(() => state.save()),
+          onChanged: () { setState(() {}); state.save(); },
         ),
         const SizedBox(height: 28),
         const Text('Test delle Intelligenze Multiple',
@@ -77,7 +77,7 @@ class _PotentialScreenState extends State<PotentialScreen> {
             index: t,
             scaleLabels: _scaleLabels,
             accent: accent,
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
         const SizedBox(height: 12),
         SoftCard(

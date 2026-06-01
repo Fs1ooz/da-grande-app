@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 
 /// Disegna una "ruota" in stile radar: anelli concentrici, raggi etichettati
-/// e un poligono che rappresenta i punteggi. Usata per la Ruota della Vita
-/// e per la Ruota delle Intelligenze.
+/// e un poligono che rappresenta i punteggi.
 class RadarWheel extends StatelessWidget {
   final List<String> labels;
   final List<int> values;
@@ -23,6 +22,7 @@ class RadarWheel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AspectRatio(
       aspectRatio: 1,
       child: CustomPaint(
@@ -31,6 +31,11 @@ class RadarWheel extends StatelessWidget {
           values: values,
           maxValue: maxValue,
           color: color,
+          ringColor:
+              isDark ? AppColors.darkBorder : const Color(0xFFE1E6F0),
+          spokeColor:
+              isDark ? AppColors.darkBorder : const Color(0xFFD7DEED),
+          labelColor: isDark ? Colors.white70 : AppColors.ink,
         ),
       ),
     );
@@ -42,12 +47,18 @@ class _RadarPainter extends CustomPainter {
   final List<int> values;
   final int maxValue;
   final Color color;
+  final Color ringColor;
+  final Color spokeColor;
+  final Color labelColor;
 
   _RadarPainter({
     required this.labels,
     required this.values,
     required this.maxValue,
     required this.color,
+    required this.ringColor,
+    required this.spokeColor,
+    required this.labelColor,
   });
 
   @override
@@ -58,19 +69,17 @@ class _RadarPainter extends CustomPainter {
     if (n == 0 || radius <= 0) return;
 
     final ringPaint = Paint()
-      ..color = const Color(0xFFE1E6F0)
+      ..color = ringColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-    // Anelli concentrici.
     const rings = 4;
     for (int r = 1; r <= rings; r++) {
       canvas.drawCircle(center, radius * r / rings, ringPaint);
     }
 
-    // Raggi.
     final spokePaint = Paint()
-      ..color = const Color(0xFFD7DEED)
+      ..color = spokeColor
       ..strokeWidth = 1;
     for (int i = 0; i < n; i++) {
       final angle = _angle(i, n);
@@ -79,7 +88,6 @@ class _RadarPainter extends CustomPainter {
       canvas.drawLine(center, end, spokePaint);
     }
 
-    // Poligono dei punteggi.
     final path = Path();
     bool hasData = false;
     for (int i = 0; i < n; i++) {
@@ -113,7 +121,6 @@ class _RadarPainter extends CustomPainter {
           ..strokeWidth = 2.5
           ..strokeJoin = StrokeJoin.round,
       );
-      // Vertici.
       for (int i = 0; i < n; i++) {
         final v = i < values.length ? values[i] : 0;
         final ratio =
@@ -126,7 +133,6 @@ class _RadarPainter extends CustomPainter {
       }
     }
 
-    // Etichette.
     for (int i = 0; i < n; i++) {
       final angle = _angle(i, n);
       final labelPos = center +
@@ -135,8 +141,8 @@ class _RadarPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
-          style: const TextStyle(
-            color: AppColors.ink,
+          style: TextStyle(
+            color: labelColor,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -144,7 +150,6 @@ class _RadarPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
       )..layout(maxWidth: 90);
-      // Allinea il testo rispetto alla sua posizione.
       double dx = labelPos.dx;
       final cos = math.cos(angle);
       if (cos < -0.3) {
@@ -162,6 +167,9 @@ class _RadarPainter extends CustomPainter {
   bool shouldRepaint(covariant _RadarPainter old) =>
       old.color != color ||
       old.maxValue != maxValue ||
+      old.ringColor != ringColor ||
+      old.spokeColor != spokeColor ||
+      old.labelColor != labelColor ||
       !listEquals(old.values, values) ||
       !listEquals(old.labels, labels);
 }

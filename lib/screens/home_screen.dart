@@ -50,7 +50,7 @@ class HomeScreen extends StatelessWidget {
   IconData _iconFor(Stage s) {
     switch (s) {
       case Stage.wheel:
-        return Icons.donut_large;
+        return Icons.radar;
       case Stage.remembered:
         return Icons.history_edu;
       case Stage.reflected:
@@ -76,9 +76,42 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _Header(progress: state.progress)),
+            SliverToBoxAdapter(
+              child: _Header(
+                progress: state.progress,
+                isDark: state.isDark,
+              ),
+            ),
+            // Card "Continua"
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+                child: _ContinueCard(
+                  onTap: () => _navigateToNextIncomplete(context),
+                  state: state,
+                ),
+              ),
+            ),
+            // Label sezione esercizi
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+                child: Text(
+                  'ESERCIZI',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                    color: state.isDark
+                        ? AppColors.darkMuted
+                        : AppColors.muted,
+                  ),
+                ),
+              ),
+            ),
+            // Lista tappe
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -103,7 +136,123 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+            // Bottone sblocca/blocca tutto
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+                child: TextButton.icon(
+                  onPressed: () => state.toggleUnlockAll(),
+                  icon: Icon(
+                    state.allUnlocked
+                        ? Icons.lock_open_outlined
+                        : Icons.lock_outline,
+                    size: 16,
+                  ),
+                  label: Text(
+                    state.allUnlocked
+                        ? 'Blocca di nuovo le tappe'
+                        : 'Sblocca tutte le tappe',
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.muted,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                  ),
+                ),
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContinueCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final AppState state;
+
+  const _ContinueCard({required this.onTap, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = state.isDark;
+    // Trova la prossima tappa non completata
+    final next = StageList.all.firstWhere(
+      (s) => !state.isComplete(s),
+      orElse: () => StageList.all.last,
+    );
+    final nextIndex = StageList.all.indexOf(next);
+    final nextColor = AppColors.stageColors[nextIndex];
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [nextColor, nextColor.withValues(alpha: 0.75)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Continua il percorso',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.85),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        next.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        next.subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.75),
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: isDark ? 0.15 : 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -112,11 +261,11 @@ class HomeScreen extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   final double progress;
-  const _Header({required this.progress});
+  final bool isDark;
+  const _Header({required this.progress, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
       decoration: BoxDecoration(
@@ -140,21 +289,6 @@ class _Header extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5)),
               const Spacer(),
-              TextButton.icon(
-                icon: const Icon(Icons.arrow_forward_rounded,
-                    size: 15, color: AppColors.amber),
-                label: const Text('Continua',
-                    style: TextStyle(
-                        color: AppColors.amber,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13)),
-                style: TextButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () => _navigateToNextIncomplete(context),
-              ),
               Builder(
                 builder: (ctx) => IconButton(
                   icon: const Icon(Icons.more_horiz, color: Colors.white),
@@ -166,7 +300,8 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 2),
           const Text(
             'Un viaggio dentro di te: dalla ruota della vita\nfino a chi scegli di essere da oggi.',
-            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
+            style:
+                TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
           ),
           const SizedBox(height: 22),
           ClipRRect(
@@ -175,7 +310,8 @@ class _Header extends StatelessWidget {
               value: progress,
               minHeight: 10,
               backgroundColor: Colors.white24,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.amber),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(AppColors.amber),
             ),
           ),
           const SizedBox(height: 8),
@@ -210,17 +346,6 @@ class _Header extends StatelessWidget {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.arrow_forward_rounded,
-                      color: AppColors.primary),
-                  title: const Text('Continua il percorso'),
-                  subtitle: const Text('Vai alla prossima tappa'),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _navigateToNextIncomplete(outerCtx);
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
                   leading: const Icon(Icons.refresh, color: AppColors.coral),
                   title: const Text('Ricomincia da capo'),
                   subtitle: const Text('Cancella tutte le risposte'),
@@ -240,7 +365,8 @@ class _Header extends StatelessWidget {
                           TextButton(
                               onPressed: () => Navigator.pop(d, true),
                               child: const Text('Cancella',
-                                  style: TextStyle(color: AppColors.coral))),
+                                  style:
+                                      TextStyle(color: AppColors.coral))),
                         ],
                       ),
                     );
@@ -283,8 +409,9 @@ class _StageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = Theme.of(context).cardTheme.color ?? Colors.white;
-    final borderColor = isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5);
+    final cardColor = isDark ? AppColors.darkCard : Colors.white;
+    final borderColor =
+        isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5);
 
     final circleColor =
         locked ? Colors.transparent : (done ? color : cardColor);
@@ -327,55 +454,68 @@ class _StageTile extends StatelessWidget {
               padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
               child: Opacity(
                 opacity: locked ? 0.55 : 1.0,
-                child: GestureDetector(
-                  onTap: locked ? null : onTap,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: cardColor,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: borderColor),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Material(
+                    color: cardColor,
+                    child: InkWell(
+                      onTap: locked ? null : onTap,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Tappa $number',
-                                      style: TextStyle(
-                                          fontSize: 11.5,
+                                  Row(
+                                    children: [
+                                      Text('Tappa $number',
+                                          style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: locked
+                                                  ? Colors.grey.shade400
+                                                  : color)),
+                                      if (done && !locked) ...[
+                                        const SizedBox(width: 6),
+                                        const Icon(Icons.check_circle,
+                                            size: 14,
+                                            color: AppColors.mint),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(stage.title,
+                                      style: const TextStyle(
+                                          fontSize: 16.5,
                                           fontWeight: FontWeight.w800,
-                                          color: locked
-                                              ? Colors.grey.shade400
-                                              : color)),
-                                  if (done && !locked) ...[
-                                    const SizedBox(width: 6),
-                                    const Icon(Icons.check_circle,
-                                        size: 14, color: AppColors.mint),
-                                  ],
+                                          height: 1.15)),
+                                  const SizedBox(height: 2),
+                                  Text(stage.subtitle,
+                                      style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: isDark
+                                              ? AppColors.darkMuted
+                                              : AppColors.muted)),
                                 ],
                               ),
-                              const SizedBox(height: 3),
-                              Text(stage.title,
-                                  style: const TextStyle(
-                                      fontSize: 16.5,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.15)),
-                              const SizedBox(height: 2),
-                              Text(stage.subtitle,
-                                  style: const TextStyle(
-                                      fontSize: 12.5, color: AppColors.muted)),
-                            ],
-                          ),
+                            ),
+                            Icon(
+                              locked
+                                  ? Icons.lock_outline
+                                  : Icons.chevron_right,
+                              color: isDark
+                                  ? AppColors.darkMuted
+                                  : AppColors.muted,
+                            ),
+                          ],
                         ),
-                        Icon(
-                          locked ? Icons.lock_outline : Icons.chevron_right,
-                          color: AppColors.muted,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

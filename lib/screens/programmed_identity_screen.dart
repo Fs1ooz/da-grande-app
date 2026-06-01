@@ -40,7 +40,7 @@ class _ProgrammedIdentityScreenState extends State<ProgrammedIdentityScreen> {
             number: i + 1,
             accent: accent,
             phrase: state.data.programmed[i],
-            onChanged: () => setState(() => state.save()),
+            onChanged: () { setState(() {}); state.save(); },
           ),
       ],
     );
@@ -148,29 +148,42 @@ class _Flag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 11),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.14) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: selected ? color : const Color(0xFFE1E6F0),
-              width: selected ? 1.6 : 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: selected ? color : AppColors.muted),
-            const SizedBox(width: 6),
-            Text(label,
-                style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: selected ? color : AppColors.muted)),
-          ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? AppColors.darkCard : Colors.white;
+    final unselectedBorder =
+        isDark ? AppColors.darkBorder : const Color(0xFFE1E6F0);
+    final unselectedText = isDark ? AppColors.darkMuted : AppColors.muted;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            decoration: BoxDecoration(
+              color: selected ? color.withValues(alpha: 0.14) : unselectedBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: selected ? color : unselectedBorder,
+                  width: selected ? 1.6 : 1),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 18, color: selected ? color : unselectedText),
+                const SizedBox(width: 6),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: selected ? color : unselectedText)),
+              ],
+            ),
+          ),
         ),
       ),
     );
