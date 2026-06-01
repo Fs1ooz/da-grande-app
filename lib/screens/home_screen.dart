@@ -240,8 +240,7 @@ class _Header extends StatelessWidget {
                           TextButton(
                               onPressed: () => Navigator.pop(d, true),
                               child: const Text('Cancella',
-                                  style:
-                                      TextStyle(color: AppColors.coral))),
+                                  style: TextStyle(color: AppColors.coral))),
                         ],
                       ),
                     );
@@ -285,8 +284,7 @@ class _StageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = Theme.of(context).cardTheme.color ?? Colors.white;
-    final borderColor =
-        isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5);
+    final borderColor = isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5);
 
     final circleColor =
         locked ? Colors.transparent : (done ? color : cardColor);
@@ -369,8 +367,7 @@ class _StageTile extends StatelessWidget {
                               const SizedBox(height: 2),
                               Text(stage.subtitle,
                                   style: const TextStyle(
-                                      fontSize: 12.5,
-                                      color: AppColors.muted)),
+                                      fontSize: 12.5, color: AppColors.muted)),
                             ],
                           ),
                         ),
