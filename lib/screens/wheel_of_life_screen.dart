@@ -5,7 +5,7 @@ import '../data/content.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
-import '../widgets/radar_wheel.dart';
+import '../widgets/wheel_chart.dart';
 
 class WheelOfLifeScreen extends StatefulWidget {
   const WheelOfLifeScreen({super.key});
@@ -146,24 +146,41 @@ class _AreaCard extends StatelessWidget {
 class _ResultCard extends StatelessWidget {
   const _ResultCard();
 
+  static const _sectionColors = [
+    Color(0xFFEF5350), // Identità e Autostima — rosso
+    Color(0xFFEC407A), // Talenti e Capacità — rosa
+    Color(0xFFFF7043), // Relazioni e Amicizie — arancio
+    Color(0xFFFFCA28), // Famiglia e Radici — ambra
+    Color(0xFF26C6DA), // Scuola/Formazione — ciano
+    Color(0xFF42A5F5), // Tempo Libero e Divertimento — blu
+    Color(0xFF66BB6A), // Salute ed Energia — verde
+    Color(0xFFAB47BC), // Direzione e Futuro — viola
+  ];
+
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final scores = state.wheelScores();
+
+    final sections = List.generate(
+      wheelAreas.length,
+      (i) => WheelSection(
+        label: wheelAreas[i].key,
+        value: scores[i].toDouble(),
+        color: _sectionColors[i % _sectionColors.length],
+      ),
+    );
+
     return SoftCard(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 12),
       child: Column(
         children: [
           const Text(
             'La tua ruota',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 8),
-          RadarWheel(
-            labels: wheelShortLabels,
-            values: state.wheelScores(),
-            maxValue: 10,
-            color: AppColors.stageColors[0],
-          ),
+          const SizedBox(height: 4),
+          WheelChart(sections: sections),
         ],
       ),
     );
