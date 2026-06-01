@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "cd 'E:/flutter/da_grande_app' && git status --porcelain | grep -q . && git add -A && git commit -m \"Aggiornamento automatico $(date '+%Y-%m-%d %H:%M')\" && git push origin main 2>&1 || true",
+            "timeout": 60,
+            "statusMessage": "Pushing to GitHub..."
+          }
+        ]
+      }
+    ]
+  }
+}
