@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/content.dart';
 import '../models/journey_data.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -15,26 +16,29 @@ class RememberedIdentityScreen extends StatefulWidget {
 }
 
 class _RememberedIdentityScreenState extends State<RememberedIdentityScreen> {
+  bool _introRead = false;
+
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[1];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.remembered.title,
+        text: sectionIntros['remembered']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.remembered.title,
       subtitle: Stage.remembered.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.history_edu_outlined,
-          text:
-              'L\'identita ricordata nasce da episodi che ti porti ancora addosso. '
-              'A volte sono vittorie che ti hanno dato forza, altre ferite che '
-              'sembrano averti definito. Per ognuno scegli un\'etichetta e decidi '
-              'se tenerla con te o lasciarla andare.',
-        ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 4),
         const _GroupHeader(
           color: AppColors.mint,
           icon: Icons.trending_up,
@@ -47,6 +51,7 @@ class _RememberedIdentityScreenState extends State<RememberedIdentityScreen> {
             number: i + 1,
             episode: state.data.empowering[i],
             accent: AppColors.mint,
+            empowering: true,
             onChanged: () { setState(() {}); state.save(); },
           ),
         const SizedBox(height: 24),
@@ -62,6 +67,7 @@ class _RememberedIdentityScreenState extends State<RememberedIdentityScreen> {
             number: i + 1,
             episode: state.data.disempowering[i],
             accent: AppColors.coral,
+            empowering: false,
             onChanged: () { setState(() {}); state.save(); },
           ),
       ],
@@ -117,12 +123,14 @@ class _EpisodeCard extends StatelessWidget {
   final int number;
   final EpisodeEntry episode;
   final Color accent;
+  final bool empowering;
   final VoidCallback onChanged;
 
   const _EpisodeCard({
     required this.number,
     required this.episode,
     required this.accent,
+    required this.empowering,
     required this.onChanged,
   });
 
@@ -156,6 +164,41 @@ class _EpisodeCard extends StatelessWidget {
                 onChanged();
               },
             ),
+            if (empowering) ...[
+              const SizedBox(height: 10),
+              const FieldLabel('Cosa ho imparato'),
+              JournalField(
+                initial: episode.imparato,
+                hint: 'La lezione che porto con me',
+                maxLines: 2,
+                onChanged: (v) {
+                  episode.imparato = v;
+                  onChanged();
+                },
+              ),
+              const SizedBox(height: 10),
+              const FieldLabel('Come posso replicarlo'),
+              JournalField(
+                initial: episode.replicare,
+                hint: 'Cosa devo, voglio e posso fare',
+                maxLines: 2,
+                onChanged: (v) {
+                  episode.replicare = v;
+                  onChanged();
+                },
+              ),
+              const SizedBox(height: 10),
+              const FieldLabel('Impatti positivi che otterrò'),
+              JournalField(
+                initial: episode.impatti,
+                hint: 'Che differenza farà nella mia vita',
+                maxLines: 2,
+                onChanged: (v) {
+                  episode.impatti = v;
+                  onChanged();
+                },
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               children: [

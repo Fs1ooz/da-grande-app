@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/content.dart';
 import '../models/journey_data.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -14,34 +15,28 @@ class ValuesScreen extends StatefulWidget {
 }
 
 class _ValuesScreenState extends State<ValuesScreen> {
+  bool _introRead = false;
+
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[5];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.valori.title,
+        text: sectionIntros['values']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.valori.title,
       subtitle: Stage.valori.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.explore_outlined,
-          text:
-              'I valori sono il GPS della tua vita: se sono chiari sai dove andare. '
-              'Avere chiari i valori pero non basta: servono i criteri, cioe le regole '
-              'personali che ti dicono quando quel valore e davvero presente nella tua vita.',
-        ),
-        const SizedBox(height: 12),
-        const InfoCard(
-          accent: AppColors.muted,
-          icon: Icons.info_outline,
-          text:
-              'Valori mezzo: sono strumenti per raggiungere qualcosa (es. lo studio, '
-              'i soldi). Valori fine: sono la destinazione, cio che vuoi davvero vivere '
-              '(es. liberta, conoscenza, gioia).',
-        ),
-        const SizedBox(height: 20),
         for (int i = 0; i < state.data.values.length; i++)
           _ValueCard(
             number: i + 1,

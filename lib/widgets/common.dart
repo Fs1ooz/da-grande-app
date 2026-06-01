@@ -2,6 +2,136 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
+/// Schermata introduttiva a tutta pagina stile workbook.
+/// Mostra il testo discorsivo del fascicolo e un CTA per accedere all'esercizio.
+class IntroCard extends StatelessWidget {
+  final String title;
+  final String text;
+  final Color accentColor;
+  final String ctaLabel;
+  final VoidCallback onStart;
+
+  const IntroCard({
+    super.key,
+    required this.title,
+    required this.text,
+    required this.accentColor,
+    required this.onStart,
+    this.ctaLabel = 'Inizia',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.darkSurface : AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.ink,
+                          accentColor.withOpacity(0.55),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.menu_book_rounded,
+                          color: Colors.white.withOpacity(0.85),
+                          size: 36,
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SoftCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w300,
+                        height: 1.65,
+                        color: isDark
+                            ? Colors.white70
+                            : AppColors.ink.withOpacity(0.85),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.surface,
+              border: Border(
+                top: BorderSide(
+                  color: isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5),
+                ),
+              ),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: onStart,
+                style: FilledButton.styleFrom(
+                  backgroundColor: accentColor,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  ctaLabel,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Scaffold standard per una sezione del percorso.
 class SectionScaffold extends StatelessWidget {
   final String title;

@@ -15,6 +15,7 @@ class CreatedIdentityScreen extends StatefulWidget {
 }
 
 class _CreatedIdentityScreenState extends State<CreatedIdentityScreen> {
+  bool _introRead = false;
   late final TextEditingController _declCtrl;
 
   @override
@@ -42,23 +43,24 @@ class _CreatedIdentityScreenState extends State<CreatedIdentityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[7];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.created.title,
+        text: sectionIntros['created']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.created.title,
       subtitle: Stage.created.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.auto_awesome_outlined,
-          text:
-              'L\'identita creata e la piu potente: non dipende dal passato ne dalle '
-              'opinioni degli altri. Nasce dalle tue scelte. Rispondi alle domande, '
-              'poi trasforma le risposte nel tuo proclama di vita.',
-        ),
-        const SizedBox(height: 20),
         const FieldLabel('Mi chiamo'),
         JournalField(
           initial: state.data.name,

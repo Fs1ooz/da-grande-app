@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/content.dart';
 import '../models/journey_data.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -16,27 +17,28 @@ class ReflectedIdentityScreen extends StatefulWidget {
 
 class _ReflectedIdentityScreenState extends State<ReflectedIdentityScreen> {
   static const _mirrorOptions = ['No', 'In parte', 'Si'];
+  bool _introRead = false;
 
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[2];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.reflected.title,
+        text: sectionIntros['reflected']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.reflected.title,
       subtitle: Stage.reflected.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.record_voice_over_outlined,
-          text:
-              'L\'identita riflessa e l\'immagine che ti arriva da fuori: le etichette '
-              'che gli altri ti mettono addosso. A volte ti danno forza, a volte ti '
-              'limitano. Scrivi cosa ti hanno detto, chiediti se ti rispecchia '
-              'davvero, poi riscrivilo come lo senti tu.',
-        ),
-        const SizedBox(height: 20),
         for (int i = 0; i < state.data.reflected.length; i++)
           _PhraseCard(
             number: i + 1,
