@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/home_screen.dart';
+import 'screens/welcome_screen.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 
@@ -33,14 +34,14 @@ class DaGrandeApp extends StatelessWidget {
 }
 
 /// Mostra uno spinner finche AppState non ha caricato i dati salvati,
-/// poi lascia spazio alla mappa del percorso.
+/// poi mostra WelcomeScreen al primo avvio, altrimenti HomeScreen.
 class _LoadingGate extends StatelessWidget {
   const _LoadingGate();
 
   @override
   Widget build(BuildContext context) {
-    final loaded = context.select<AppState, bool>((s) => s.loaded);
-    if (!loaded) {
+    final state = context.watch<AppState>();
+    if (!state.loaded) {
       return const Scaffold(
         backgroundColor: AppColors.ink,
         body: Center(
@@ -50,6 +51,7 @@ class _LoadingGate extends StatelessWidget {
         ),
       );
     }
+    if (!state.welcomeSeen) return const WelcomeScreen();
     return const HomeScreen();
   }
 }

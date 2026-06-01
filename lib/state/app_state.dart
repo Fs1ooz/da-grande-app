@@ -66,9 +66,11 @@ class AppState extends ChangeNotifier {
   static const _key = 'da_grande_journey_v1';
   static const _darkKey = 'da_grande_dark_v1';
   static const _unlockKey = 'da_grande_unlock_all_v1';
+  static const _welcomeKey = 'da_grande_welcome_v1';
   bool loaded = false;
   bool isDark = false;
   bool allUnlocked = false;
+  bool welcomeSeen = false;
 
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
@@ -82,6 +84,7 @@ class AppState extends ChangeNotifier {
     }
     isDark = _prefs?.getBool(_darkKey) ?? false;
     allUnlocked = _prefs?.getBool(_unlockKey) ?? false;
+    welcomeSeen = _prefs?.getBool(_welcomeKey) ?? false;
     loaded = true;
     notifyListeners();
   }
@@ -98,6 +101,12 @@ class AppState extends ChangeNotifier {
   Future<void> toggleDark() async {
     isDark = !isDark;
     await _prefs?.setBool(_darkKey, isDark);
+    notifyListeners();
+  }
+
+  Future<void> markWelcomeSeen() async {
+    welcomeSeen = true;
+    await _prefs?.setBool(_welcomeKey, true);
     notifyListeners();
   }
 

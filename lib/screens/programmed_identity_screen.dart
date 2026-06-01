@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data/content.dart';
 import '../models/journey_data.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -15,26 +16,28 @@ class ProgrammedIdentityScreen extends StatefulWidget {
 }
 
 class _ProgrammedIdentityScreenState extends State<ProgrammedIdentityScreen> {
+  bool _introRead = false;
+
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[4];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.programmed.title,
+        text: sectionIntros['programmed']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.programmed.title,
       subtitle: Stage.programmed.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.campaign_outlined,
-          text:
-              'A volte gli altri parlano del tuo futuro come se fosse gia scritto. '
-              'Ma il futuro non e una profezia: e una scelta. Scrivi le frasi che hai '
-              'sentito su cosa diventerai, segna se ti motivano o ti limitano, poi '
-              'riscrivile partendo da "Io voglio...".',
-        ),
-        const SizedBox(height: 20),
         for (int i = 0; i < state.data.programmed.length; i++)
           _ProgCard(
             number: i + 1,

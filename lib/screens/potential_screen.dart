@@ -16,26 +16,90 @@ class PotentialScreen extends StatefulWidget {
 
 class _PotentialScreenState extends State<PotentialScreen> {
   static const _scaleLabels = ['0', '1', '2', '3'];
+  // 0=intro potenziale, 1=liste, 2=intro intelligenze, 3=test completo
+  int _phase = 0;
 
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[3];
 
+    if (_phase == 0) {
+      return IntroCard(
+        title: Stage.potential.title,
+        text: sectionIntros['potential']!,
+        accentColor: accent,
+        ctaLabel: 'Compila le valigie',
+        onStart: () => setState(() => _phase = 1),
+      );
+    }
+
+    if (_phase == 2) {
+      return IntroCard(
+        title: 'Le Intelligenze Multiple',
+        text: sectionIntros['intelligences']!,
+        accentColor: accent,
+        ctaLabel: 'Inizia il test',
+        onStart: () => setState(() => _phase = 3),
+      );
+    }
+
+    final state = context.read<AppState>();
+
+    if (_phase == 1) {
+      return SectionScaffold(
+        title: Stage.potential.title,
+        subtitle: 'Talenti, risorse e capacità',
+        accent: accent,
+        children: [
+          _ListBox(
+            title: 'TALENTI',
+            hint: 'Cose che ti riescono con naturalezza',
+            icon: Icons.star_rounded,
+            color: AppColors.amber,
+            items: state.data.talenti,
+            onChanged: () { setState(() {}); state.save(); },
+          ),
+          const SizedBox(height: 14),
+          _ListBox(
+            title: 'RISORSE',
+            hint: 'La tua benzina psicologica ed emotiva',
+            icon: Icons.favorite_rounded,
+            color: AppColors.coral,
+            items: state.data.risorse,
+            onChanged: () { setState(() {}); state.save(); },
+          ),
+          const SizedBox(height: 14),
+          _ListBox(
+            title: 'CAPACITA',
+            hint: 'Abilita che hai allenato e vuoi allenare',
+            icon: Icons.fitness_center_rounded,
+            color: AppColors.cyan,
+            items: state.data.capacita,
+            onChanged: () { setState(() {}); state.save(); },
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => setState(() => _phase = 2),
+              icon: const Icon(Icons.psychology_outlined),
+              label: const Text('Scopri le tue intelligenze'),
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // _phase == 3: corpo completo
     return SectionScaffold(
       title: Stage.potential.title,
       subtitle: Stage.potential.subtitle,
       accent: accent,
       children: [
-        InfoCard(
-          accent: accent,
-          icon: Icons.bolt_outlined,
-          text:
-              'Il potenziale e un patrimonio interiore fatto di tre parti: i talenti '
-              '(le tue predisposizioni naturali), le risorse interiori (la tua benzina '
-              'emotiva) e le capacita allenate (cio che costruisci con la pratica).',
-        ),
-        const SizedBox(height: 20),
         _ListBox(
           title: 'TALENTI',
           hint: 'Cose che ti riescono con naturalezza',

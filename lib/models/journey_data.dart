@@ -5,15 +5,36 @@ class EpisodeEntry {
   String text;
   String label;
   bool keep; // true = tengo questa identita, false = la lascio andare
+  // Campi extra per gli episodi potenzianti (lasciati vuoti nei depotenzianti)
+  String imparato;
+  String replicare;
+  String impatti;
 
-  EpisodeEntry({this.text = '', this.label = '', this.keep = true});
+  EpisodeEntry({
+    this.text = '',
+    this.label = '',
+    this.keep = true,
+    this.imparato = '',
+    this.replicare = '',
+    this.impatti = '',
+  });
 
-  Map<String, dynamic> toJson() => {'text': text, 'label': label, 'keep': keep};
+  Map<String, dynamic> toJson() => {
+        'text': text,
+        'label': label,
+        'keep': keep,
+        'imparato': imparato,
+        'replicare': replicare,
+        'impatti': impatti,
+      };
 
   factory EpisodeEntry.fromJson(Map<String, dynamic> j) => EpisodeEntry(
         text: j['text'] as String? ?? '',
         label: j['label'] as String? ?? '',
         keep: j['keep'] as bool? ?? true,
+        imparato: j['imparato'] as String? ?? '',
+        replicare: j['replicare'] as String? ?? '',
+        impatti: j['impatti'] as String? ?? '',
       );
 }
 

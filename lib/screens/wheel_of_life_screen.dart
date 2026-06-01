@@ -16,26 +16,28 @@ class WheelOfLifeScreen extends StatefulWidget {
 
 class _WheelOfLifeScreenState extends State<WheelOfLifeScreen> {
   static const _options = ['No', 'In parte', 'Si'];
+  bool _introRead = false;
 
   @override
   Widget build(BuildContext context) {
-    final state = context.read<AppState>();
     final accent = AppColors.stageColors[0];
+
+    if (!_introRead) {
+      return IntroCard(
+        title: Stage.wheel.title,
+        text: sectionIntros['wheel']!,
+        accentColor: accent,
+        onStart: () => setState(() => _introRead = true),
+      );
+    }
+
+    final state = context.read<AppState>();
 
     return SectionScaffold(
       title: Stage.wheel.title,
       subtitle: 'Per ogni frase: No, In parte o Si',
       accent: accent,
       children: [
-        const InfoCard(
-          accent: AppColors.primary,
-          icon: Icons.explore_outlined,
-          text:
-              'La Ruota della Vita e come uno specchio: mostra in un colpo d\'occhio '
-              'quanto equilibrio c\'e tra le aree importanti per te. Piu la ruota e '
-              'armonica, piu il tuo viaggio scorre fluido.',
-        ),
-        const SizedBox(height: 20),
         for (int area = 0; area < wheelAreas.length; area++)
           _AreaCard(
             index: area,
