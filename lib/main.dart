@@ -20,10 +20,13 @@ class DaGrandeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.select<AppState, bool>((s) => s.isDark);
     return MaterialApp(
       title: 'Da Grande',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       home: const _LoadingGate(),
     );
   }

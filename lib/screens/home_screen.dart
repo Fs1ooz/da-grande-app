@@ -12,29 +12,40 @@ import 'remembered_identity_screen.dart';
 import 'values_screen.dart';
 import 'wheel_of_life_screen.dart';
 
+Widget _screenFor(Stage s) {
+  switch (s) {
+    case Stage.wheel:
+      return const WheelOfLifeScreen();
+    case Stage.remembered:
+      return const RememberedIdentityScreen();
+    case Stage.reflected:
+      return const ReflectedIdentityScreen();
+    case Stage.potential:
+      return const PotentialScreen();
+    case Stage.programmed:
+      return const ProgrammedIdentityScreen();
+    case Stage.valori:
+      return const ValuesScreen();
+    case Stage.miracle:
+      return const MiracleScreen();
+    case Stage.created:
+      return const CreatedIdentityScreen();
+  }
+}
+
+void _navigateToNextIncomplete(BuildContext context) {
+  final state = context.read<AppState>();
+  final next = StageList.all.firstWhere(
+    (s) => !state.isComplete(s),
+    orElse: () => StageList.all.last,
+  );
+  Navigator.of(context)
+      .push(MaterialPageRoute(builder: (_) => _screenFor(next)))
+      .then((_) => state.notify());
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  Widget _screenFor(Stage s) {
-    switch (s) {
-      case Stage.wheel:
-        return const WheelOfLifeScreen();
-      case Stage.remembered:
-        return const RememberedIdentityScreen();
-      case Stage.reflected:
-        return const ReflectedIdentityScreen();
-      case Stage.potential:
-        return const PotentialScreen();
-      case Stage.programmed:
-        return const ProgrammedIdentityScreen();
-      case Stage.valori:
-        return const ValuesScreen();
-      case Stage.miracle:
-        return const MiracleScreen();
-      case Stage.created:
-        return const CreatedIdentityScreen();
-    }
-  }
 
   IconData _iconFor(Stage s) {
     switch (s) {
@@ -78,6 +89,7 @@ class HomeScreen extends StatelessWidget {
                       icon: _iconFor(stage),
                       color: AppColors.stageColors[index],
                       done: state.isComplete(stage),
+                      locked: state.isLocked(stage),
                       isLast: index == StageList.all.length - 1,
                       onTap: () {
                         Navigator.of(context)
@@ -104,11 +116,14 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.ink, AppColors.primary],
+          colors: isDark
+              ? [AppColors.darkSurface, AppColors.deep]
+              : [AppColors.ink, AppColors.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -117,7 +132,6 @@ class _Header extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Da Grande',
                   style: TextStyle(
@@ -125,10 +139,26 @@ class _Header extends StatelessWidget {
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5)),
+              const Spacer(),
+              TextButton.icon(
+                icon: const Icon(Icons.arrow_forward_rounded,
+                    size: 15, color: AppColors.amber),
+                label: const Text('Continua',
+                    style: TextStyle(
+                        color: AppColors.amber,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13)),
+                style: TextButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => _navigateToNextIncomplete(context),
+              ),
               Builder(
                 builder: (ctx) => IconButton(
                   icon: const Icon(Icons.more_horiz, color: Colors.white),
-                  onPressed: () => _showMenu(ctx),
+                  onPressed: () => _showMenu(ctx, context),
                 ),
               ),
             ],
@@ -159,49 +189,70 @@ class _Header extends StatelessWidget {
     );
   }
 
-  void _showMenu(BuildContext context) {
+  void _showMenu(BuildContext sheetCtx, BuildContext outerCtx) {
     showModalBottomSheet(
-      context: context,
+      context: sheetCtx,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(Icons.refresh, color: AppColors.coral),
-                title: const Text('Ricomincia da capo'),
-                subtitle: const Text('Cancella tutte le risposte'),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  final ok = await showDialog<bool>(
-                    context: context,
-                    builder: (d) => AlertDialog(
-                      title: const Text('Sei sicuro?'),
-                      content: const Text(
-                          'Tutte le tue risposte verranno cancellate. '
-                          'Questa azione non puo essere annullata.'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(d, false),
-                            child: const Text('Annulla')),
-                        TextButton(
-                            onPressed: () => Navigator.pop(d, true),
-                            child: const Text('Cancella',
-                                style: TextStyle(color: AppColors.coral))),
-                      ],
-                    ),
-                  );
-                  if (ok == true && context.mounted) {
-                    await context.read<AppState>().reset();
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
+        return Consumer<AppState>(
+          builder: (ctx, state, _) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  secondary: const Icon(Icons.dark_mode_outlined),
+                  title: const Text('Modalità scura'),
+                  value: state.isDark,
+                  onChanged: (_) => state.toggleDark(),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.arrow_forward_rounded,
+                      color: AppColors.primary),
+                  title: const Text('Continua il percorso'),
+                  subtitle: const Text('Vai alla prossima tappa'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _navigateToNextIncomplete(outerCtx);
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.refresh, color: AppColors.coral),
+                  title: const Text('Ricomincia da capo'),
+                  subtitle: const Text('Cancella tutte le risposte'),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final ok = await showDialog<bool>(
+                      context: outerCtx,
+                      builder: (d) => AlertDialog(
+                        title: const Text('Sei sicuro?'),
+                        content: const Text(
+                            'Tutte le tue risposte verranno cancellate. '
+                            'Questa azione non puo essere annullata.'),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(d, false),
+                              child: const Text('Annulla')),
+                          TextButton(
+                              onPressed: () => Navigator.pop(d, true),
+                              child: const Text('Cancella',
+                                  style:
+                                      TextStyle(color: AppColors.coral))),
+                        ],
+                      ),
+                    );
+                    if (ok == true && outerCtx.mounted) {
+                      await outerCtx.read<AppState>().reset();
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         );
       },
@@ -215,6 +266,7 @@ class _StageTile extends StatelessWidget {
   final IconData icon;
   final Color color;
   final bool done;
+  final bool locked;
   final bool isLast;
   final VoidCallback onTap;
 
@@ -224,35 +276,49 @@ class _StageTile extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.done,
+    required this.locked,
     required this.isLast,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = Theme.of(context).cardTheme.color ?? Colors.white;
+    final borderColor =
+        isDark ? AppColors.darkBorder : const Color(0xFFE8ECF5);
+
+    final circleColor =
+        locked ? Colors.transparent : (done ? color : cardColor);
+    final circleBorderColor = locked ? Colors.grey.shade400 : color;
+    final circleIcon = locked ? Icons.lock_outline : icon;
+    final circleIconColor =
+        locked ? Colors.grey.shade400 : (done ? Colors.white : color);
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Colonna del "cammino": pallino + linea.
+          // Timeline: cerchio + linea verticale
           Column(
             children: [
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: done ? color : Colors.white,
+                  color: circleColor,
                   shape: BoxShape.circle,
-                  border: Border.all(color: color, width: 2),
+                  border: Border.all(color: circleBorderColor, width: 2),
                 ),
-                child: Icon(icon, size: 22, color: done ? Colors.white : color),
+                child: Icon(circleIcon, size: 22, color: circleIconColor),
               ),
               if (!isLast)
                 Expanded(
                   child: Container(
                     width: 2.5,
                     margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: color.withValues(alpha: 0.30),
+                    color: (locked ? Colors.grey.shade300 : color)
+                        .withValues(alpha: 0.30),
                   ),
                 ),
             ],
@@ -261,50 +327,59 @@ class _StageTile extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
-              child: GestureDetector(
-                onTap: onTap,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFE8ECF5)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text('Tappa $number',
-                                    style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: color)),
-                                if (done) ...[
-                                  const SizedBox(width: 6),
-                                  const Icon(Icons.check_circle,
-                                      size: 14, color: AppColors.mint),
+              child: Opacity(
+                opacity: locked ? 0.55 : 1.0,
+                child: GestureDetector(
+                  onTap: locked ? null : onTap,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text('Tappa $number',
+                                      style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: locked
+                                              ? Colors.grey.shade400
+                                              : color)),
+                                  if (done && !locked) ...[
+                                    const SizedBox(width: 6),
+                                    const Icon(Icons.check_circle,
+                                        size: 14, color: AppColors.mint),
+                                  ],
                                 ],
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-                            Text(stage.title,
-                                style: const TextStyle(
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.15)),
-                            const SizedBox(height: 2),
-                            Text(stage.subtitle,
-                                style: const TextStyle(
-                                    fontSize: 12.5, color: AppColors.muted)),
-                          ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(stage.title,
+                                  style: const TextStyle(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.15)),
+                              const SizedBox(height: 2),
+                              Text(stage.subtitle,
+                                  style: const TextStyle(
+                                      fontSize: 12.5,
+                                      color: AppColors.muted)),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.chevron_right, color: AppColors.muted),
-                    ],
+                        Icon(
+                          locked ? Icons.lock_outline : Icons.chevron_right,
+                          color: AppColors.muted,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

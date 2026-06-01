@@ -14,6 +14,12 @@ class AppColors {
   static const Color card = Colors.white;
   static const Color muted = Color(0xFF6B7591);
 
+  // Dark mode
+  static const Color darkSurface = Color(0xFF0A1128);
+  static const Color darkCard    = Color(0xFF152040);
+  static const Color darkBorder  = Color(0xFF1E2E50);
+  static const Color darkMuted   = Color(0xFF8A96B3);
+
   /// Un colore per ciascuna tappa, per dare identita alla mappa del viaggio.
   static const List<Color> stageColors = [
     Color(0xFF2E5BFF), // ruota
@@ -25,6 +31,66 @@ class AppColors {
     Color(0xFFFF6B6B), // miracolo
     Color(0xFF2E5BFF), // creata
   ];
+}
+
+ThemeData buildDarkTheme() {
+  final base = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+      primary: AppColors.primary,
+      surface: AppColors.darkSurface,
+    ),
+    scaffoldBackgroundColor: AppColors.darkSurface,
+  );
+
+  return base.copyWith(
+    textTheme: base.textTheme.apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      foregroundColor: Colors.white,
+      centerTitle: false,
+    ),
+    cardTheme: CardThemeData(
+      color: AppColors.darkCard,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      margin: EdgeInsets.zero,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.darkCard,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.darkBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.darkBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
+      hintStyle: const TextStyle(color: AppColors.darkMuted),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      ),
+    ),
+  );
 }
 
 ThemeData buildTheme() {

@@ -5,7 +5,7 @@ import '../data/content.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
-import '../widgets/radar_wheel.dart';
+import '../widgets/donut_chart.dart';
 
 class WheelOfLifeScreen extends StatefulWidget {
   const WheelOfLifeScreen({super.key});
@@ -158,11 +158,11 @@ class _ResultCard extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 8),
-          RadarWheel(
+          DonutChart(
             labels: wheelShortLabels,
             values: state.wheelScores(),
             maxValue: 10,
-            color: AppColors.primary,
+            colors: AppColors.stageColors,
           ),
         ],
       ),
