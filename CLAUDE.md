@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Fully offline; all data persisted locally via SharedPreferences
 - Custom radar chart (no external charting library) for Wheel of Life and Multiple Intelligences
+- Dark mode toggle and "unlock all stages" override persisted separately in SharedPreferences
 - Reset option in home menu clears all data with confirmation
 
 ## Tech Stack
@@ -46,23 +47,33 @@ flutter build web
 
 ### State Management
 
-Single `AppState extends ChangeNotifier` (`lib/state/app_state.dart`) wraps the entire app via `ChangeNotifierProvider` in `main.dart`. It holds a `JourneyData` instance and exposes computed properties (`wheelScores()`, `intelScores()`, `isComplete(Stage)`, `progress`).
+Single `AppState extends ChangeNotifier` (`lib/state/app_state.dart`) wraps the entire app via `ChangeNotifierProvider` in `main.dart`. It holds a `JourneyData` instance and exposes:
 
-UI reads state via `context.watch<AppState>()` or `context.read<AppState>()`. Every mutation modifies `state.data` directly, then calls `state.save()` explicitly — there is no auto-save.
+- Computed scores: `wheelScores()`, `intelScores()`
+- Progress: `isComplete(Stage)`, `isLocked(Stage)`, `progress`
+- Flags: `isDark`, `allUnlocked`, `welcomeSeen`, `loaded`
+- Actions: `toggleDark()`, `toggleUnlockAll()`, `markWelcomeSeen()`, `reset()`, `generateDeclaration()`
+- `notify()` — public `notifyListeners()` wrapper, called by `HomeScreen` after Navigator.pop to refresh stage tiles
+
+UI reads state via `context.watch<AppState>()` or `context.read<AppState>()`. Every mutation modifies `state.data` directly then calls `state.save()` explicitly — there is no auto-save.
 
 ### Loading Pattern
 
-`AppState.load()` runs in `main()` before `runApp`. A `_LoadingGate` widget in `main.dart` shows a spinner until `loaded == true`, then swaps to `HomeScreen`.
+`AppState()..load()` is called inside `ChangeNotifierProvider.create` in `main.dart`. A `_LoadingGate` widget shows a spinner until `loaded == true`, then routes to `WelcomeScreen` (first launch, when `welcomeSeen == false`) or `HomeScreen`.
 
 ### Data Persistence
 
 `JourneyData` serializes to/from JSON via `encode()` / `JourneyData.decode(raw)`. Stored under key `da_grande_journey_v1`. Missing/corrupt data falls back to `JourneyData.empty()`. `Map<int, String>` (the `presentation` field) converts int keys to strings for JSON compatibility.
 
-Padding helpers (`_padEpisodes`, `_padReflected`, etc.) in `journey_data.dart` ensure lists always reach their minimum length on decode — no validation throws.
+Additional SharedPreferences keys: `da_grande_dark_v1` (bool), `da_grande_unlock_all_v1` (bool), `da_grande_welcome_v1` (bool).
+
+Padding helpers (`_padEpisodes`, `_padReflected`, etc.) in `journey_data.dart` ensure lists always reach their minimum length on decode — no validation throws. A `_Let<T>` extension provides a `.let(fn)` chaining helper used in `fromJson`.
 
 ### Stage Lifecycle
 
-8 stages defined as `enum Stage` in `app_state.dart`: `wheel → remembered → reflected → potential → programmed → values → miracle → created`. `StageList.all` is the canonical ordered list.
+8 stages defined as `enum Stage` in `app_state.dart`: `wheel → remembered → reflected → potential → programmed → valori → miracle → created`. `StageList.all` is the canonical ordered list.
+
+`AppState.isLocked(Stage s)` returns `false` when `allUnlocked == true`; otherwise a stage is locked if the previous stage is not complete.
 
 `AppState.isComplete(Stage s)` computes completion on demand (no caching). Completion rules:
 - **wheel**: all 40 cells ≥ 0 (no `-1`)
@@ -70,17 +81,17 @@ Padding helpers (`_padEpisodes`, `_padReflected`, etc.) in `journey_data.dart` e
 - **reflected**: any `reflected` entry has non-empty `said`
 - **potential**: any `talenti` non-empty **and** all 45 intel cells ≥ 0
 - **programmed**: any `programmed` entry has non-empty `said`
-- **values**: any `values` entry has non-empty `value`
+- **valori**: any `values` entry has non-empty `value`
 - **miracle**: any `miracle` string non-empty
 - **created**: `declaration` non-empty **or** any `presentation` answer non-empty
 
 ### Navigation
 
-Plain `Navigator.push/pop` — no routing library. `HomeScreen` renders all 8 stage tiles; tapping pushes the dedicated screen. All stage screens use `SectionScaffold` from `widgets/common.dart`.
+Plain `Navigator.push/pop` — no routing library. `HomeScreen` renders all 8 stage tiles; tapping pushes the dedicated screen. After pop, `state.notify()` is called to refresh the tile list. Each stage screen starts with an `IntroCard` (workbook intro text + CTA), then pushes the exercise screen which uses `SectionScaffold`.
 
 ### Content Layer
 
-`lib/data/content.dart` holds all hardcoded Italian text: `wheelAreas` (8×5 questions), `intelligences` (9×5 items), and `buildDeclaration()` which generates the final life proclamation from `name` + `presentation` answers.
+`lib/data/content.dart` holds all hardcoded Italian text: `wheelAreas` (8×5 questions), `intelligences` (9×5 items), and `buildDeclaration()` which generates the final life proclamation from `name` + `presentation` answers. `AppState.generateDeclaration()` calls this, writes the result to `data.declaration`, saves, and notifies.
 
 ## Data Model (`lib/models/journey_data.dart`)
 
@@ -99,15 +110,29 @@ Plain `Navigator.push/pop` — no routing library. `HomeScreen` renders all 8 st
 | `presentation` | `Map<int, String>` | "Who are you?" answers by question index |
 | `declaration` | `String` | Generated life proclamation |
 
-Key model fields:
-- `EpisodeEntry`: `text`, `label`, `keep` (bool — keep or release this identity)
+Key model types:
+- `EpisodeEntry`: `text`, `label`, `keep` (bool), `imparato`, `replicare`, `impatti` (extra reflection fields on empowering episodes)
 - `ReflectedPhrase`: `said`, `mirrors` (0=No, 1=Partially, 2=Yes), `rewritten`
 - `ProgrammedPhrase`: `said`, `motivating` (bool), `iWant`
 - `ValueEntry`: `value`, `criteria` (List\<String\> of 3)
 
+## Widgets (`lib/widgets/common.dart`)
+
+Reusable widgets shared across stage screens:
+
+| Widget | Purpose |
+|---|---|
+| `IntroCard` | Full-page intro before each exercise: gradient header, workbook text, CTA button |
+| `SectionScaffold` | Standard scaffold for exercise screens: colored accent bar, title, subtitle, scrollable children |
+| `InfoCard` | Tinted info box with icon, used for workbook prompts |
+| `SoftCard` | Theme-aware white/dark card with rounded border |
+| `FieldLabel` | Bold label above form inputs |
+| `ChoiceRow` | Animated single-select button row (used for 0/1/2 answers) |
+| `JournalField` | `TextField` that fires `onChanged` on every keystroke; caller is responsible for saving |
+
 ## Theme & Colors
 
-`lib/theme.dart` — `buildTheme()` creates a Material 3 `ColorScheme`. `AppColors.stageColors` is a list aligned to `StageList.all` order; each stage gets a unique accent color. Palette includes ink (navy), primary (bright blue), cyan, amber, coral, mint.
+`lib/theme.dart` — `buildTheme()` (light) and `buildDarkTheme()` (dark) create Material 3 `ColorScheme`. Dark mode is toggled via `AppState.toggleDark()` and applied via `themeMode` in `MaterialApp`. `AppColors.stageColors` is a list aligned to `StageList.all` order; each stage gets a unique accent color. Palette includes `ink` (navy), `primary` (bright blue), `cyan`, `amber`, `coral`, `mint`, and dark-mode equivalents (`darkSurface`, `darkCard`, `darkBorder`, `darkMuted`).
 
 ## Test Coverage
 
